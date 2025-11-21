@@ -1,0 +1,62 @@
+## ================================
+## DartLog ASP.NET Core 専用 .gitignore
+## ================================
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+
+# Logs
+*.log
+Logs/
+log/
+logs/
+
+# ASP.NET Core auto-generated folders
+wwwroot/lib/
+wwwroot/node_modules/
+wwwroot/dist/
+
+# Data folder (必要なら無視を解除してOK)
+# Data/
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+
+# Publish outputs
+publish/
+*.pubxml.user
+*.Publish.xml
+
+# Environment
+.env
+.env.*
+appsettings.Development.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors / Tools
+.idea/
+*.swp
+*.swo
+.vscode/
+
+# Rider / Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# Dotnet CLI
+artifacts/
