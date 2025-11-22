@@ -1,0 +1,77 @@
+﻿@page
+@model DartLog.Pages.Games.PlayModel
+@{
+    ViewData["Title"] = "CountUp プレイ";
+}
+
+<h1>CountUp ゲーム</h1>
+
+@if (Model.IsFinished)
+{
+    <div class="alert alert-info">
+        <h3>ゲーム終了！</h3>
+        <p>プレイヤー: <strong>@Model.PlayerName</strong></p>
+        <p>最終スコア: <strong>@Model.FinalScore</strong></p>
+    </div>
+
+    <p>
+        <a asp-page="/Index" class="btn btn-secondary">ホームに戻る</a>
+        <a asp-page="/Games/Start" class="btn btn-success">新しいゲームを開始</a>
+    </p>
+}
+else
+{
+    <div class="mb-3">
+        <p>プレイヤー: <strong>@Model.PlayerName</strong></p>
+        <p>ゲームID: @Model.GameId</p>
+        <p>現在の合計スコア: @Model.CurrentTotalScore</p>
+        <p>ラウンド: <strong>@Model.CurrentRound</strong> / 8</p>
+        <p>投目: <strong>@Model.CurrentDart</strong> / 3</p>
+    </div>
+
+    <form method="post">
+        <!-- ルートパラメータとしても渡すけど、hidden でも渡しておく -->
+        <input type="hidden" name="gameId" value="@Model.GameId" />
+
+        <div class="form-group" style="width: 150px;">
+            <label asp-for="InputScore">今回のスコア</label>
+
+            <div class="input-group">
+                <input asp-for="InputScore"
+                       class="form-control"
+                       type="text" />
+
+                @* ×2 / ×3 ボタン *@
+                <button type="button" class="btn btn-outline-secondary" onclick="multiplyscore(2)">×2</button>
+                <button type="button" class="btn btn-outline-secondary" onclick="multiplyscore(3)">×3</button>
+            </div>
+
+            <span asp-validation-for="InputScore" class="text-danger"></span>
+        </div>
+
+
+
+        <br />
+
+        <button type="submit" class="btn btn-primary">記録</button>
+        <a asp-page="/Index" class="btn btn-secondary">中止してホームへ</a>
+    </form>
+
+    @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function multiplyScore(factor) {
+            const input = document.getElementById("InputScore");
+            if (!input) return;
+
+            const current = parseInt(input.value || "0", 10);
+            if (isNaN(current)) {
+                return; // 数値でないときは何もしない
+            }
+
+            input.value = current * factor;
+        }
+    </script>
+    }
+}
