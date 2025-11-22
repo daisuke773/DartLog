@@ -20,7 +20,7 @@ log/
 logs/
 
 # ASP.NET Core auto-generated folders
-wwwroot/lib/
+# wwwroot/lib/
 wwwroot/node_modules/
 wwwroot/dist/
 
