@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using DartLog.Models;
+﻿using DartLog.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DartLog.Data
 {
@@ -18,7 +18,6 @@ namespace DartLog.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // throws のユニーク制約 (game_id, round_no, dart_no)
             modelBuilder.Entity<Throw>()
                 .HasIndex(t => new { t.GameId, t.RoundNo, t.DartNo })
                 .IsUnique();

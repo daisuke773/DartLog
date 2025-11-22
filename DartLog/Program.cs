@@ -1,15 +1,22 @@
+using DartLog.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ★ DbContext（Postgres 接続設定）
+builder.Services.AddDbContext<DartLogContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+// ★ Razor Pages
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -20,6 +27,10 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+// ★ API のルートを追加
+app.MapControllers();
+
+// Razor Pages のルート
 app.MapRazorPages();
 
 app.Run();
