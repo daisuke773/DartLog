@@ -1,0 +1,28 @@
+﻿@page
+@model DartLog.Pages.Players.DeleteModel
+@{
+    ViewData["Title"] = "プレイヤー削除";
+}
+
+<h1>プレイヤー削除</h1>
+
+<h3>このプレイヤーを削除してもよろしいですか？</h3>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">ID</dt>
+        <dd class="col-sm-10">@Model.Player.Id</dd>
+
+        <dt class="col-sm-2">名前</dt>
+        <dd class="col-sm-10">@Model.Player.Name</dd>
+
+        <dt class="col-sm-2">作成日時</dt>
+        <dd class="col-sm-10">@Model.Player.CreatedAt</dd>
+    </dl>
+</div>
+
+<form method="post">
+    <input type="hidden" asp-for="Player.Id" />
+    <button type="submit" class="btn btn-danger">削除</button>
+    <a asp-page="./Index" class="btn btn-secondary">キャンセル</a>
+</form>

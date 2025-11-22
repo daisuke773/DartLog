@@ -1,0 +1,37 @@
+﻿@page
+@model DartLog.Pages.Players.IndexModel
+@{
+    ViewData["Title"] = "プレイヤー一覧";
+}
+
+<h1>プレイヤー一覧</h1>
+
+<p>
+    <a asp-page="./Create" class="btn btn-primary">新規登録</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>名前</th>
+            <th>作成日時</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Players)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.CreatedAt</td>
+                <td>
+                    <a asp-page="./Details" asp-route-id="@item.Id">詳細</a> |
+                    <a asp-page="./Edit" asp-route-id="@item.Id">編集</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.Id">削除</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

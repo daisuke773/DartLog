@@ -1,0 +1,27 @@
+﻿@page
+@model DartLog.Pages.Players.EditModel
+@{
+    ViewData["Title"] = "プレイヤー編集";
+}
+
+<h1>プレイヤー編集</h1>
+
+<form method="post">
+    <!-- Id は隠しフィールドで送る -->
+    <input type="hidden" asp-for="Player.Id" />
+
+    <div class="form-group">
+        <label asp-for="Player.Name" class="control-label"></label>
+        <input asp-for="Player.Name" class="form-control" />
+        <span asp-validation-for="Player.Name" class="text-danger"></span>
+    </div>
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">保存</button>
+    <a asp-page="./Index" class="btn btn-secondary">キャンセル</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

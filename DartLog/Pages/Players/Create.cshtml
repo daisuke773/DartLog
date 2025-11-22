@@ -1,0 +1,26 @@
+﻿@page
+@model DartLog.Pages.Players.CreateModel
+@{
+    ViewData["Title"] = "プレイヤー登録";
+}
+
+<h1>プレイヤー登録</h1>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="Player.Name" class="control-label"></label>
+        <input asp-for="Player.Name" class="form-control" />
+        <span asp-validation-for="Player.Name" class="text-danger"></span>
+    </div>
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">登録</button>
+    <a asp-page="/Index" class="btn btn-secondary">戻る</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

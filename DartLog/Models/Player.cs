@@ -19,7 +19,7 @@ namespace DartLog.Models
 
         [Required]
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; }            // players.created_at
+        public DateTime CreatedAt { get; set; } = DateTime.Now; // or DateTime.Now
 
         // ナビゲーションプロパティ（1人のプレイヤーが複数Gameを持つ）
         public List<Game> Games { get; set; } = new();
