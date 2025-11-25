@@ -1,0 +1,134 @@
+﻿@page
+@model DartLog.Pages.Games.IndexModel
+@{
+    ViewData["Title"] = "ゲーム履歴";
+}
+
+<h1>ゲーム履歴</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted">完了したゲームの履歴を検索・確認できます。</span>
+    <div>
+        <a asp-page="/Games/Start" class="btn btn-success">新しいゲームを開始</a>
+        <a asp-page="/Index" class="btn btn-secondary ms-2">ホームへ戻る</a>
+    </div>
+</div>
+
+<!-- 絞り込みフォーム -->
+<form method="get" class="card card-body mb-3">
+    <div class="row g-2">
+        <div class="col-md-3">
+            <label class="form-label">プレイヤー</label>
+            <select asp-for="PlayerId" class="form-select"
+                    asp-items="@(new SelectList(Model.Players, "Id", "Name"))">
+                <option value="">-- 全員 --</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">開始日(From)</label>
+            <input asp-for="FromDate" class="form-control" type="date" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">終了日(To)</label>
+            <input asp-for="ToDate" class="form-control" type="date" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">最低スコア</label>
+            <input asp-for="MinScore" class="form-control" type="number" />
+        </div>
+    </div>
+
+    <div class="row g-2 mt-2">
+        <div class="col-md-3">
+            <label class="form-label">並び順</label>
+            <select asp-for="SortOrder" class="form-select">
+                <option value="date_desc">日付（新しい順）</option>
+                <option value="date_asc">日付（古い順）</option>
+                <option value="score_desc">スコア（高い順）</option>
+                <option value="score_asc">スコア（低い順）</option>
+            </select>
+        </div>
+
+        <div class="col-md-9 d-flex align-items-end justify-content-end">
+            <button type="submit" class="btn btn-primary me-2">検索</button>
+            <a asp-page="./Index" class="btn btn-outline-secondary">条件クリア</a>
+        </div>
+    </div>
+</form>
+
+<!-- サマリー -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="fw-bold">総プレイ回数</div>
+                <div class="fs-4">@Model.TotalCount 回</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="fw-bold">平均スコア</div>
+                <div class="fs-4">
+                    @(Model.AverageScore.HasValue ? Model.AverageScore.Value.ToString("0.0") + " 点" : "-")
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="fw-bold">ベストスコア</div>
+                <div class="fs-4">
+                    @(Model.BestScore.HasValue ? Model.BestScore.Value + " 点" : "-")
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="fw-bold">直近プレイ</div>
+                <div class="fs-6">
+                    @(Model.LastPlayedAt.HasValue ? Model.LastPlayedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 履歴テーブル -->
+@if (!Model.Games.Any())
+{
+    <p>まだ完了したゲームはありません。</p>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ゲームID</th>
+                <th>プレイヤー</th>
+                <th>プレイ日時</th>
+                <th class="text-end">スコア</th>
+                <th>状態</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var g in Model.Games)
+            {
+                <tr>
+                    <td>@g.Id</td>
+                    <td>@g.PlayerName</td>
+                    <td>@g.PlayedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td class="text-end">@g.TotalScore</td>
+                    <td>@g.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
