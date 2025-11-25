@@ -4,7 +4,7 @@
     ViewData["Title"] = "CountUp プレイ";
 }
 
-<h1>CountUp ゲーム</h1>
+<h1 class="mb-4">CountUp ゲーム</h1>
 
 @if (Model.IsFinished)
 {
@@ -15,47 +15,153 @@
     </div>
 
     <p>
-        <a asp-page="/Index" class="btn btn-secondary">ホームに戻る</a>
+        <a asp-page="/Index" class="btn btn-secondary me-2">ホームに戻る</a>
         <a asp-page="/Games/Start" class="btn btn-success">新しいゲームを開始</a>
     </p>
 }
 else
 {
-    <div class="mb-3">
-        <p>プレイヤー: <strong>@Model.PlayerName</strong></p>
-        <p>ゲームID: @Model.GameId</p>
-        <p>現在の合計スコア: @Model.CurrentTotalScore</p>
-        <p>ラウンド: <strong>@Model.CurrentRound</strong> / 8</p>
-        <p>投目: <strong>@Model.CurrentDart</strong> / 3</p>
-    </div>
+    <div class="row">
+        <!-- 左カラム：ゲーム情報 ＋ 入力 -->
+        <div class="col-md-5">
 
-    <form method="post">
-        <!-- ルートパラメータとしても渡すけど、hidden でも渡しておく -->
-        <input type="hidden" name="gameId" value="@Model.GameId" />
+            <!-- ゲーム情報カード -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    ゲーム情報
+                </div>
+                <div class="card-body">
+                    <p class="mb-1">プレイヤー: <strong>@Model.PlayerName</strong></p>
+                    <p class="mb-1">ゲームID: <span class="text-muted">@Model.GameId</span></p>
 
-        <div class="form-group" style="width: 150px;">
-            <label asp-for="InputScore">今回のスコア</label>
+                    <p class="mb-1">
+                        ラウンド:
+                        <strong>@Model.CurrentRound</strong> / @Model.MaxRounds
+                    </p>
+                    <p class="mb-3">
+                        投目:
+                        <strong>@Model.CurrentDart</strong> / @Model.MaxDartsPerRound
+                    </p>
 
-            <div class="input-group">
-                <input asp-for="InputScore"
-                       class="form-control"
-                       type="text" />
-
-                @* ×2 / ×3 ボタン *@
-                <button type="button" class="btn btn-outline-secondary" onclick="multiplyScore(2)">×2</button>
-                <button type="button" class="btn btn-outline-secondary" onclick="multiplyScore(3)">×3</button>
+                    <div class="mt-2">
+                        <div class="text-muted small">現在の合計スコア</div>
+                        <div class="display-4 fw-bold">
+                            @Model.CurrentTotalScore
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <span asp-validation-for="InputScore" class="text-danger"></span>
+            <!-- 入力カード -->
+            <div class="card">
+                <div class="card-header">
+                    スコア入力
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <!-- ルートパラメータとしても渡すけど、hidden でも渡しておく -->
+                        <input type="hidden" name="gameId" value="@Model.GameId" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                        <div class="mb-3" style="max-width: 220px;">
+                            <label asp-for="InputScore" class="form-label">今回のスコア</label>
+
+                            <div class="input-group">
+                                <input asp-for="InputScore"
+                                       class="form-control"
+                                       type="text" />
+
+                                @* ×2 / ×3 ボタン *@
+                                <button type="button" class="btn btn-outline-secondary" onclick="multiplyScore(2)">×2</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="multiplyScore(3)">×3</button>
+                            </div>
+
+                            <span asp-validation-for="InputScore" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                記録
+                            </button>
+                            <a asp-page="/Index" class="btn btn-secondary">
+                                中止してホームへ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
-
-
-        <br />
-
-        <button type="submit" class="btn btn-primary">記録</button>
-        <a asp-page="/Index" class="btn btn-secondary">中止してホームへ</a>
-    </form>
+        <!-- 右カラム：履歴 -->
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>スロー履歴</span>
+                    <small class="text-muted">新しい投げほど上に表示</small>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.ThrowHistory == null || !Model.ThrowHistory.Any())
+                    {
+                        <p class="m-3 text-muted">まだスコアは記録されていません。</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ラウンド</th>
+                                        <th>投目</th>
+                                        <th>スコア</th>
+                                        <th>累計スコア</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var t in Model.ThrowHistory)
+                                    {
+                                        <tr>
+                                            <td>@t.RoundNo</td>
+                                            <td>@t.DartNo</td>
+                                            <td>@t.Score</td>
+                                            <td>@t.TotalScoreAfter</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <!-- ここからダーツボードカード -->
+        <div class="card mt-3">
+            <div class="card-header">
+                ダーツボード
+            </div>
+            <div class="card-body text-center">
+                <div id="dartboard-container"
+                     class="position-relative mx-auto"
+                     style="width:320px;height:320px;max-width:100%;">
+                    <img id="dartboard-image"
+                         src="~/images/dartboard.png"
+                         alt="Dartboard"
+                         class="img-fluid rounded-circle" />
+                    <!-- クリックを受け取る透明レイヤー -->
+                    <div id="dartboard-overlay"
+                         class="position-absolute top-0 start-0 w-100 h-100"
+                         style="cursor:pointer;"></div>
+                </div>
+                <div class="mt-2 text-muted small">
+                    ボードをクリックすると「今回のスコア」に反映されます。
+                </div>
+                <div class="mt-1">
+                    <span id="dartboard-score-display" class="fw-bold"></span>
+                </div>
+            </div>
+        </div>
+        <!-- ダーツボードカードここまで -->
+    </div>
 
     @section Scripts {
     <partial name="_ValidationScriptsPartial" />
@@ -72,6 +178,95 @@ else
 
             input.value = current * factor;
         }
+
+        // ダーツボードクリックでスコアを算出
+        (function () {
+            const overlay = document.getElementById("dartboard-overlay");
+            const input = document.getElementById("InputScore");
+            const display = document.getElementById("dartboard-score-display");
+
+            if (!overlay || !input) return;
+
+            // ダーツボードの番号の並び（上=20 から時計回り）
+            const numbers = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17,
+                             3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+
+            overlay.addEventListener("click", function (e) {
+                const rect = overlay.getBoundingClientRect();
+
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const cx = rect.width / 2;
+                const cy = rect.height / 2;
+
+                const dx = x - cx;
+                const dy = cy - y; // 上方向を正にする
+
+                const r = Math.sqrt(dx * dx + dy * dy);    // 半径
+                const R = Math.min(rect.width, rect.height) / 2; // ボード半径
+
+                // ボード外 → ミス (0点)
+                if (r > R) {
+                    setScore(0, "MISS");
+                    return;
+                }
+
+                // 角度計算（0度を上、時計回り）
+                let angleRad = Math.atan2(dy, dx); // -PI ～ PI
+                let angleDeg = angleRad * 180 / Math.PI;
+                angleDeg = (90 - angleDeg + 360) % 360;  // 0度=上, 時計回り
+
+                // どの番号セグメントか (1セグメント 18度)
+                const index = Math.floor((angleDeg + 9) / 18) % 20;
+                const base = numbers[index];
+
+                // 半径比でシングル/ダブル/トリプル/ブルを判定（ざっくり比率）
+                const ratio = r / R;
+
+                console.log("ratio:", ratio.toFixed(3));
+
+                let score;
+                let label;
+
+                const innerBull   = 0.045;  // 内ブルの外周よりちょい大きめ
+                const outerBull   = 0.120;  // 外ブルの外周
+                const tripleInner = 0.370;
+                const tripleOuter = 0.400;
+                const doubleInner = 0.625;
+                const doubleOuter = 0.670;
+
+                if (ratio <= innerBull) {
+                    score = 50;
+                    label = "INNER BULL (50)";
+                }
+                else if (ratio <= outerBull) {
+                    score = 50;
+                    label = "OUTER BULL (50)";
+                }
+                else if (ratio >= tripleInner && ratio <= tripleOuter) {
+                    score = base * 3;
+                    label = "TRIPLE " + base + " (" + score + ")";
+                }
+                else if (ratio >= doubleInner && ratio <= doubleOuter) {
+                    score = base * 2;
+                    label = "DOUBLE " + base + " (" + score + ")";
+                }
+                else {
+                    score = base;
+                    label = "SINGLE " + base + " (" + score + ")";
+                }
+
+                setScore(score, label);
+            });
+
+            function setScore(score, label) {
+                input.value = score;
+                if (display) {
+                    display.textContent = label || (score + " 点");
+                }
+            }
+        })();
     </script>
     }
 }

@@ -20,6 +20,10 @@ namespace DartLog.Pages.Games
         private const int DartsPerRound = 3;
         private const int TotalThrows = Rounds * DartsPerRound; // 24
 
+        // 画面側でも使いたいので公開プロパティにしておく
+        public int MaxRounds => Rounds;
+        public int MaxDartsPerRound => DartsPerRound;
+
         // 画面表示用
         public int GameId { get; set; }
         public string PlayerName { get; set; } = "";
@@ -28,6 +32,9 @@ namespace DartLog.Pages.Games
         public int CurrentTotalScore { get; set; }
         public bool IsFinished { get; set; }
         public int FinalScore { get; set; }
+
+        // 履歴表示用
+        public List<ThrowHistoryView> ThrowHistory { get; set; } = new();
 
         // 入力されたスコア
         [BindProperty]
@@ -64,6 +71,9 @@ namespace DartLog.Pages.Games
 
             var throwCount = throws.Count;
             CurrentTotalScore = throws.Sum(t => t.Score);
+
+            // 履歴用プロパティを作成
+            ThrowHistory = BuildHistoryList(throws);
 
             if (throwCount >= TotalThrows)
             {
@@ -130,6 +140,8 @@ namespace DartLog.Pages.Games
                 CurrentTotalScore = throws.Sum(t => t.Score);
                 CurrentRound = currentIndexForError / DartsPerRound + 1;
                 CurrentDart = currentIndexForError % DartsPerRound + 1;
+                IsFinished = false;
+                ThrowHistory = BuildHistoryList(throws);
 
                 return Page();
             }
@@ -154,5 +166,45 @@ namespace DartLog.Pages.Games
             // PRG パターン（Post-Redirect-Get）
             return RedirectToPage(new { gameId = GameId });
         }
+
+        /// <summary>
+        /// 投げた履歴（累計スコア付き）を View 用に組み立てる
+        /// </summary>
+        private List<ThrowHistoryView> BuildHistoryList(List<Throw> throws)
+        {
+            var result = new List<ThrowHistoryView>();
+            int runningTotal = 0;
+
+            // ラウンド / 投目順に累計を計算
+            foreach (var t in throws.OrderBy(t => t.RoundNo).ThenBy(t => t.DartNo))
+            {
+                runningTotal += t.Score;
+
+                result.Add(new ThrowHistoryView
+                {
+                    RoundNo = t.RoundNo,
+                    DartNo = t.DartNo,
+                    Score = t.Score,
+                    TotalScoreAfter = runningTotal
+                });
+            }
+
+            // 画面では新しいものから表示したいので逆順に
+            return result
+                .OrderByDescending(x => x.RoundNo)
+                .ThenByDescending(x => x.DartNo)
+                .ToList();
+        }
+    }
+
+    /// <summary>
+    /// View 用の履歴表示DTO
+    /// </summary>
+    public class ThrowHistoryView
+    {
+        public int RoundNo { get; set; }
+        public int DartNo { get; set; }
+        public int Score { get; set; }
+        public int TotalScoreAfter { get; set; }
     }
 }
