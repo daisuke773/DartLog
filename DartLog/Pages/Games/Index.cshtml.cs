@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using DartLog.Data;
 using DartLog.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -16,9 +17,7 @@ namespace DartLog.Pages.Games
         }
 
         // ==== 検索条件 ====
-        [BindProperty(SupportsGet = true)]
-        public int? PlayerId { get; set; }
-
+        // プレイヤー＝ログインユーザーなので PlayerId は削除
         [BindProperty(SupportsGet = true)]
         public DateTime? FromDate { get; set; }
 
@@ -33,7 +32,6 @@ namespace DartLog.Pages.Games
 
         // ==== 画面表示用 ====
         public IList<GameListItem> Games { get; set; } = new List<GameListItem>();
-        public IList<Player> Players { get; set; } = new List<Player>();
 
         // サマリー用
         public int TotalCount { get; set; }
@@ -44,6 +42,7 @@ namespace DartLog.Pages.Games
         public class GameListItem
         {
             public int Id { get; set; }
+            // 表示上は「プレイヤー名」扱いのままにしておく（中身はログインユーザー名）
             public string PlayerName { get; set; } = "";
             public DateTime PlayedAt { get; set; }
             public int TotalScore { get; set; }
@@ -52,23 +51,26 @@ namespace DartLog.Pages.Games
 
         public async Task OnGetAsync()
         {
-            // プレイヤー一覧（プルダウン用）
-            Players = await _context.Players
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            // ログインユーザーIDを取得
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                // AuthorizeFolder で基本ログイン必須のはずだが、念のため
+                Games = new List<GameListItem>();
+                TotalCount = 0;
+                AverageScore = null;
+                BestScore = null;
+                LastPlayedAt = null;
+                return;
+            }
 
-            // ベースクエリ：完了ゲームのみ
+            // ベースクエリ：ログインユーザーの completed ゲームのみ
             var query = _context.Games
-                .Include(g => g.Player)
-                .Where(g => g.Status == "completed")
+                .Include(g => g.User)
+                .Where(g => g.Status == "completed" && g.UserId == userId)
                 .AsQueryable();
 
             // ==== 絞り込み ====
-            if (PlayerId.HasValue)
-            {
-                query = query.Where(g => g.PlayerId == PlayerId.Value);
-            }
-
             if (FromDate.HasValue)
             {
                 var from = FromDate.Value.Date;
@@ -88,9 +90,15 @@ namespace DartLog.Pages.Games
 
             // ==== サマリー ====
             TotalCount = await query.CountAsync();
-            AverageScore = await query.Select(g => (double?)g.TotalScore).AverageAsync();
-            BestScore = await query.MaxAsync(g => (int?)g.TotalScore);
-            LastPlayedAt = await query.MaxAsync(g => (DateTime?)g.PlayedAt);
+            AverageScore = await query
+                .Select(g => (double?)g.TotalScore)
+                .AverageAsync();
+
+            BestScore = await query
+                .MaxAsync(g => (int?)g.TotalScore);
+
+            LastPlayedAt = await query
+                .MaxAsync(g => (DateTime?)g.PlayedAt);
 
             // ==== 並び順 ====
             query = SortOrder switch
@@ -106,7 +114,8 @@ namespace DartLog.Pages.Games
                 .Select(g => new GameListItem
                 {
                     Id = g.Id,
-                    PlayerName = g.Player.Name,
+                    // DisplayName があれば優先、なければ UserName
+                    PlayerName = g.User.DisplayName ?? g.User.UserName ?? "",
                     PlayedAt = g.PlayedAt,
                     TotalScore = g.TotalScore,
                     Status = g.Status

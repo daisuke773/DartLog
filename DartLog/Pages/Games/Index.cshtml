@@ -7,7 +7,7 @@
 <h1>ゲーム履歴</h1>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <span class="text-muted">完了したゲームの履歴を検索・確認できます。</span>
+    <span class="text-muted">ログイン中のあなたのゲーム履歴を検索・確認できます。</span>
     <div>
         <a asp-page="/Games/Start" class="btn btn-success">新しいゲームを開始</a>
         <a asp-page="/Index" class="btn btn-secondary ms-2">ホームへ戻る</a>
@@ -17,32 +17,24 @@
 <!-- 絞り込みフォーム -->
 <form method="get" class="card card-body mb-3">
     <div class="row g-2">
-        <div class="col-md-3">
-            <label class="form-label">プレイヤー</label>
-            <select asp-for="PlayerId" class="form-select"
-                    asp-items="@(new SelectList(Model.Players, "Id", "Name"))">
-                <option value="">-- 全員 --</option>
-            </select>
-        </div>
-
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label class="form-label">開始日(From)</label>
             <input asp-for="FromDate" class="form-control" type="date" />
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label class="form-label">終了日(To)</label>
             <input asp-for="ToDate" class="form-control" type="date" />
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label class="form-label">最低スコア</label>
             <input asp-for="MinScore" class="form-control" type="number" />
         </div>
     </div>
 
     <div class="row g-2 mt-2">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label class="form-label">並び順</label>
             <select asp-for="SortOrder" class="form-select">
                 <option value="date_desc">日付（新しい順）</option>
@@ -52,7 +44,7 @@
             </select>
         </div>
 
-        <div class="col-md-9 d-flex align-items-end justify-content-end">
+        <div class="col-md-8 d-flex align-items-end justify-content-end">
             <button type="submit" class="btn btn-primary me-2">検索</button>
             <a asp-page="./Index" class="btn btn-outline-secondary">条件クリア</a>
         </div>
@@ -74,7 +66,7 @@
             <div class="card-body">
                 <div class="fw-bold">平均スコア</div>
                 <div class="fs-4">
-                    @(Model.AverageScore.HasValue ? Model.AverageScore.Value.ToString("0.0") + " 点" : "-")
+                    @(Model.AverageScore.HasValue? Model.AverageScore.Value.ToString("0.0") + " 点" : "-")
                 </div>
             </div>
         </div>
@@ -84,7 +76,7 @@
             <div class="card-body">
                 <div class="fw-bold">ベストスコア</div>
                 <div class="fs-4">
-                    @(Model.BestScore.HasValue ? Model.BestScore.Value + " 点" : "-")
+                    @(Model.BestScore.HasValue? Model.BestScore.Value + " 点" : "-")
                 </div>
             </div>
         </div>
@@ -94,7 +86,7 @@
             <div class="card-body">
                 <div class="fw-bold">直近プレイ</div>
                 <div class="fs-6">
-                    @(Model.LastPlayedAt.HasValue ? Model.LastPlayedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")
+                    @(Model.LastPlayedAt.HasValue? Model.LastPlayedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")
                 </div>
             </div>
         </div>

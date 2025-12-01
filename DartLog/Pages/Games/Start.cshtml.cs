@@ -1,8 +1,8 @@
+ï»¿using System.Security.Claims;
 using DartLog.Data;
 using DartLog.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace DartLog.Pages.Games
 {
@@ -15,35 +15,30 @@ namespace DartLog.Pages.Games
             _context = context;
         }
 
-        // ƒvƒŒƒCƒ„[ˆê——iƒhƒƒbƒvƒ_ƒEƒ“—pj
-        public IList<Player> Players { get; set; } = new List<Player>();
+        // ä»Šã¯ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é¸æŠã‚’ã—ãªã„ã®ã§ã€ä¸€è¦§ã‚‚ãƒã‚¤ãƒ³ãƒ‰ã‚‚ä¸è¦
+        // ç”»é¢å´ã¯ã€Œã‚²ãƒ¼ãƒ é–‹å§‹ã€ãƒœã‚¿ãƒ³ã ã‘ã§OK
 
-        // ‘I‘ğ‚³‚ê‚½ƒvƒŒƒCƒ„[IDiPOST‚Åó‚¯æ‚éj
-        [BindProperty]
-        public int SelectedPlayerId { get; set; }
-
-        // GETFƒvƒŒƒCƒ„[‘I‘ğ‰æ–Ê
-        public async Task OnGetAsync()
+        // GETï¼šã‚²ãƒ¼ãƒ é–‹å§‹ç”»é¢ï¼ˆèª¬æ˜ã¨ãƒœã‚¿ãƒ³ã ã‘ã‚’è¡¨ç¤ºï¼‰
+        public void OnGet()
         {
-            Players = await _context.Players
-                .OrderBy(p => p.Id)
-                .ToListAsync();
+            // ç‰¹ã«ä½•ã‚‚ã—ãªã„
         }
 
-        // POSTFƒQ[ƒ€ŠJn
+        // POSTï¼šã‚²ãƒ¼ãƒ é–‹å§‹ï¼ˆãƒ­ã‚°ã‚¤ãƒ³ãƒ¦ãƒ¼ã‚¶ãƒ¼ã®ã‚²ãƒ¼ãƒ ã‚’1ä»¶ä½œæˆï¼‰
         public async Task<IActionResult> OnPostAsync()
         {
-            if (SelectedPlayerId <= 0)
+            // ãƒ­ã‚°ã‚¤ãƒ³ãƒ¦ãƒ¼ã‚¶ãƒ¼IDã‚’å–å¾—
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
             {
-                ModelState.AddModelError(nameof(SelectedPlayerId), "ƒvƒŒƒCƒ„[‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢B");
-                await OnGetAsync();
-                return Page();
+                // èªè¨¼ã•ã‚Œã¦ã„ãªã„å ´åˆã¯ãƒ­ã‚°ã‚¤ãƒ³ã¸
+                return Challenge();
             }
 
-            // Game ‚ğì¬iŠJn“_‚Å IN_PROGRESSj
+            // Game ã‚’ä½œæˆï¼ˆé–‹å§‹æ™‚ç‚¹ã§ in_progressï¼‰
             var game = new Game
             {
-                PlayerId = SelectedPlayerId,
+                UserId = userId,
                 PlayedAt = DateTime.Now,
                 TotalScore = 0,
                 Status = "in_progress",
@@ -53,7 +48,7 @@ namespace DartLog.Pages.Games
             _context.Games.Add(game);
             await _context.SaveChangesAsync();
 
-            // gameId ‚ğ•t‚¯‚Ä Play ƒy[ƒW‚Ö
+            // gameId ã‚’ä»˜ã‘ã¦ Play ãƒšãƒ¼ã‚¸ã¸
             return RedirectToPage("/Games/Play", new { gameId = game.Id });
         }
     }

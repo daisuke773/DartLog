@@ -1,35 +1,8 @@
 ﻿@page
 @model DartLog.Pages.Games.StartModel
-@{
-    ViewData["Title"] = "CountUp ゲーム開始";
-}
 
 <h1>CountUp ゲーム開始</h1>
 
 <form method="post">
-
-    <div class="form-group">
-        <label for="SelectedPlayerId">プレイヤーを選択</label>
-
-        <select asp-for="SelectedPlayerId" class="form-control">
-            <option value="">-- プレイヤーを選択 --</option>
-
-            @foreach (var p in Model.Players)
-            {
-                <option value="@p.Id">@p.Name</option>
-            }
-        </select>
-
-        <span asp-validation-for="SelectedPlayerId" class="text-danger"></span>
-    </div>
-
-    <br />
-
     <button type="submit" class="btn btn-success">ゲーム開始</button>
-    <a asp-page="/Index" class="btn btn-secondary">ホームへ戻る</a>
-
 </form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

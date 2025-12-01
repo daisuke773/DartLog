@@ -1,23 +1,61 @@
 using DartLog.Data;
+using DartLog.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// š DbContextiPostgres Ú‘±İ’èj
+// ==============================
+// DbContextï¿½iPostgreSQL ï¿½Ú‘ï¿½ï¿½j
+// ==============================
 builder.Services.AddDbContext<DartLogContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Npgsql ï¿½Ìƒ^ï¿½Cï¿½ï¿½ï¿½Xï¿½^ï¿½ï¿½ï¿½vï¿½İŠï¿½ï¿½İ’ï¿½iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Ü‚Üj
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-// š Razor Pages
-builder.Services.AddRazorPages();
+// ==============================
+// Identityï¿½iï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½@ï¿½\ï¿½j
+// ==============================
+// ApplicationUser = ï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Uï¿½[
+builder.Services
+    .AddDefaultIdentity<ApplicationUser>(options =>
+    {
+        // ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½mï¿½Fï¿½È‚ï¿½ï¿½Åƒï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Âiï¿½ÈˆÕ‰^ï¿½pï¿½j
+        options.SignIn.RequireConfirmedAccount = false;
+    })
+    .AddEntityFrameworkStores<DartLogContext>();
+
+// ==============================
+// Razor Pages
+// ==============================
+builder.Services.AddRazorPages(options =>
+{
+    // ï¿½Aï¿½vï¿½ï¿½ï¿½Sï¿½Ì‚ï¿½ï¿½ï¿½{ï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Kï¿½{ï¿½É‚ï¿½ï¿½ï¿½
+    options.Conventions.AuthorizeFolder("/");
+
+    // Identity ï¿½Ìƒï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½^ï¿½oï¿½^ï¿½yï¿½[ï¿½Wï¿½Í“ï¿½ï¿½ï¿½ï¿½Aï¿½Nï¿½Zï¿½Xï¿½ï¿½ï¿½ï¿½
+    options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Login");
+    options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Register");
+});
+
+// ï¿½ï¿½ï¿½ï¿½ API ï¿½Rï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½È‚ç‚»ï¿½Ì‚Ü‚ÜŒpï¿½ï¿½
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
+// ==============================
+// ï¿½~ï¿½hï¿½ï¿½ï¿½Eï¿½Fï¿½Aï¿½pï¿½Cï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½
+// ==============================
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
+}
+else
+{
+    // ï¿½Jï¿½ï¿½ï¿½Â‹ï¿½ï¿½È‚ï¿½}ï¿½Cï¿½Oï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½hï¿½|ï¿½Cï¿½ï¿½ï¿½gï¿½iï¿½Cï¿½Ój
+    // app.UseMigrationsEndPoint();
 }
 
 app.UseHttpsRedirection();
@@ -25,12 +63,14 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// ï¿½ï¿½ ï¿½Fï¿½ï¿½ ï¿½ï¿½ ï¿½Fï¿½ï¿½ ï¿½Ìï¿½ï¿½Ô‚ï¿½ï¿½dï¿½v
+app.UseAuthentication();
 app.UseAuthorization();
 
-// š API ‚Ìƒ‹[ƒg‚ğ’Ç‰Á
+// API ï¿½ï¿½ï¿½[ï¿½gï¿½iï¿½Kï¿½vï¿½È‚ï¿½j
 app.MapControllers();
 
-// Razor Pages ‚Ìƒ‹[ƒg
+// Razor Pages ï¿½ï¿½ï¿½[ï¿½g
 app.MapRazorPages();
 
 app.Run();

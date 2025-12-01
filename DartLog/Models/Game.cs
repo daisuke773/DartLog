@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Numerics;
 
 namespace DartLog.Models
 {
@@ -13,9 +12,10 @@ namespace DartLog.Models
         [Column("id")]
         public int Id { get; set; }
 
+        // ★ PlayerId → UserId に変更（AspNetUsers.Id と同じ string 型）
         [Required]
-        [Column("player_id")]
-        public int PlayerId { get; set; }
+        [Column("user_id")]
+        public string UserId { get; set; } = null!;
 
         [Required]
         [Column("played_at")]
@@ -35,10 +35,10 @@ namespace DartLog.Models
         [Column("ended_at")]
         public DateTime? EndedAt { get; set; }
 
-        // ナビゲーションプロパティ
-        [ForeignKey(nameof(PlayerId))]
-        public Player Player { get; set; } = null!;   // 1件のGameは1人のPlayerに属する
+        // ★ ナビゲーション：1ゲームは1ユーザー（＝プレイヤー）に属する
+        [ForeignKey(nameof(UserId))]
+        public ApplicationUser User { get; set; } = null!;
 
-        public List<Throw> Throws { get; set; } = new(); // 1件のGameに複数Throw
+        public List<Throw> Throws { get; set; } = new();
     }
 }

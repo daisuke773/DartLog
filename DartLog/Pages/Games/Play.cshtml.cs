@@ -1,4 +1,5 @@
-﻿using DartLog.Data;
+﻿using System.Security.Claims;
+using DartLog.Data;
 using DartLog.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -50,18 +51,26 @@ namespace DartLog.Pages.Games
                 return NotFound();
             }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                // ログイン必須のはずだが、念のため
+                return Challenge();
+            }
+
             GameId = gameId.Value;
 
             var game = await _context.Games
-                .Include(g => g.Player)
-                .FirstOrDefaultAsync(g => g.Id == GameId);
+                .Include(g => g.User)
+                .FirstOrDefaultAsync(g => g.Id == GameId && g.UserId == userId);
 
             if (game == null)
             {
+                // 他人のゲーム or 存在しない
                 return NotFound();
             }
 
-            PlayerName = game.Player.Name;
+            PlayerName = game.User.DisplayName ?? game.User.UserName ?? "";
 
             var throws = await _context.Throws
                 .Where(t => t.GameId == GameId)
@@ -104,6 +113,12 @@ namespace DartLog.Pages.Games
         // POST: 1投分のスコア登録
         public async Task<IActionResult> OnPostAsync(int gameId)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Challenge();
+            }
+
             GameId = gameId;
 
             // 簡単なバリデーション（負の点数はナシ）
@@ -112,9 +127,12 @@ namespace DartLog.Pages.Games
                 ModelState.AddModelError(nameof(InputScore), "スコアは 0 以上を入力してください。");
             }
 
-            var game = await _context.Games.FindAsync(GameId);
+            var game = await _context.Games
+                .FirstOrDefaultAsync(g => g.Id == GameId && g.UserId == userId);
+
             if (game == null)
             {
+                // 他人のゲーム or 存在しない
                 return NotFound();
             }
 
@@ -136,7 +154,8 @@ namespace DartLog.Pages.Games
             {
                 // GET と同じ情報を再セットして、同じ画面に戻す
                 var currentIndexForError = throwCount;
-                PlayerName = (await _context.Players.FindAsync(game.PlayerId))?.Name ?? "";
+
+                PlayerName = await GetCurrentUserDisplayNameAsync();
                 CurrentTotalScore = throws.Sum(t => t.Score);
                 CurrentRound = currentIndexForError / DartsPerRound + 1;
                 CurrentDart = currentIndexForError % DartsPerRound + 1;
@@ -165,6 +184,18 @@ namespace DartLog.Pages.Games
 
             // PRG パターン（Post-Redirect-Get）
             return RedirectToPage(new { gameId = GameId });
+        }
+
+        /// <summary>
+        /// 現在ログインしているユーザーの表示名を取得
+        /// </summary>
+        private async Task<string> GetCurrentUserDisplayNameAsync()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return "";
+
+            var user = await _context.Users.FindAsync(userId);
+            return user?.DisplayName ?? user?.UserName ?? "";
         }
 
         /// <summary>
