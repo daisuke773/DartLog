@@ -1,21 +1,59 @@
 ﻿@page
 @model LogoutModel
 @{
-    ViewData["Title"] = "Log out";
+    ViewData["Title"] = "ログアウト";
 }
 
-<header>
-    <h1>@ViewData["Title"]</h1>
-    @{
-        if (User.Identity?.IsAuthenticated ?? false)
+<div class="d-flex justify-content-center mt-5">
+    <div class="card shadow-sm p-4" style="width: 100%; max-width: 420px; border-radius: 1rem;">
+
+        <div class="text-center mb-4">
+            <div class="mb-2" style="font-size: 2.5rem; color: #14213d;">
+                <i class="bi bi-box-arrow-right"></i>
+            </div>
+            <h2 class="fw-bold">ログアウト</h2>
+        </div>
+
+        @if (User.Identity?.IsAuthenticated ?? false)
         {
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
+            <p class="text-center text-muted mb-4">
+                ログアウトしますか？
+            </p>
+
+            <a asp-area=""
+                asp-page="/Index"
+                class="btn w-100 text-dark mb-3"
+                style="
+                    background-color:#e5e7eb;
+                    border-radius:0.8rem;">
+                ホームへ戻る
+            </a>
+
+
+            <form method="post">
+                <button type="submit" class="btn w-100 text-white"
+                        style="background-color:#14213d; border-radius:0.8rem;">
+                    ログアウトする
+                </button>
             </form>
         }
         else
         {
-            <p>You have successfully logged out of the application.</p>
+            <div class="text-center">
+                <p class="text-muted mb-3">
+                    アプリケーションから正常にログアウトしました。
+                </p>
+
+                <!-- 🔹 ログイン画面へ戻るボタン -->
+                <a asp-area="Identity"
+                   asp-page="/Account/Login"
+                   asp-route-returnUrl=""
+                   class="btn w-100 text-white"
+                   style="background-color:#14213d; border-radius:0.8rem;">
+                    ログイン画面へ戻る
+                </a>
+            </div>
         }
-    }
-</header>
+
+    </div>
+</div>

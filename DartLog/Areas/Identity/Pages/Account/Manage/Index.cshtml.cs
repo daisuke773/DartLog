@@ -57,7 +57,7 @@ namespace DartLog.Areas.Identity.Pages.Account.Manage
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Phone]
-            [Display(Name = "Phone number")]
+            [Display(Name = "電話番号")]
             public string PhoneNumber { get; set; }
         }
 
@@ -106,13 +106,13 @@ namespace DartLog.Areas.Identity.Pages.Account.Manage
                 var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
                 if (!setPhoneResult.Succeeded)
                 {
-                    StatusMessage = "Unexpected error when trying to set phone number.";
+                    StatusMessage = "電話番号の更新中に予期せぬエラーが発生しました。";
                     return RedirectToPage();
                 }
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your profile has been updated";
+            StatusMessage = "プロフィールを更新しました。";
             return RedirectToPage();
         }
     }

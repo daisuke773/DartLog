@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DartLog.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous] // アカウント登録画面は未ログインでもアクセス可
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -46,94 +47,81 @@ namespace DartLog.Areas.Identity.Pages.Account
             _emailSender = emailSender;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string ReturnUrl { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [EmailAddress]
-            [Display(Name = "Email")]
+            [Required(ErrorMessage = "メールアドレスは必須です。")]
+            [EmailAddress(ErrorMessage = "メールアドレスの形式が正しくありません。")]
+            [Display(Name = "メールアドレス")]
             public string Email { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+            [Required(ErrorMessage = "パスワードは必須です。")]
+            [StringLength(100,
+                ErrorMessage = "{0}は{2}文字以上{1}文字以内で入力してください。",
+                MinimumLength = 6)]
             [DataType(DataType.Password)]
-            [Display(Name = "Password")]
+            [Display(Name = "パスワード")]
             public string Password { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+            [Display(Name = "パスワード（確認）")]
+            [Compare("Password", ErrorMessage = "パスワードと確認用パスワードが一致しません。")]
             public string ConfirmPassword { get; set; }
         }
-
 
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            ExternalLogins = (await _signInManager
+                .GetExternalAuthenticationSchemesAsync())
+                .ToList();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            ExternalLogins = (await _signInManager
+                .GetExternalAuthenticationSchemesAsync())
+                .ToList();
+
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
+                    _logger.LogInformation("ユーザーが新しいアカウントを作成しました。");
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    // メール件名・本文を日本語に
+                    var subject = "【DartLog】メールアドレス確認のお願い";
+                    var body = $@"
+                            DartLog のアカウント登録ありがとうございます。<br/>
+                            以下のリンクをクリックして、メールアドレスの確認を完了してください。<br/><br/>
+                            <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>メールアドレスを確認する</a><br/><br/>
+                            このメールに心当たりがない場合は、破棄していただいて問題ありません。";
+
+                    await _emailSender.SendEmailAsync(Input.Email, subject, body);
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
@@ -145,13 +133,16 @@ namespace DartLog.Areas.Identity.Pages.Account
                         return LocalRedirect(returnUrl);
                     }
                 }
+
+                // Identity が返すエラー（パスワードポリシーなど）は英語のままですが、
+                // 必要であれば IdentityErrorDescriber を差し替えて日本語化することもできます。
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
 
-            // If we got this far, something failed, redisplay form
+            // ここまで来たら何かしら失敗しているので、フォーム再表示
             return Page();
         }
 
@@ -163,9 +154,10 @@ namespace DartLog.Areas.Identity.Pages.Account
             }
             catch
             {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                    $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
-                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
+                throw new InvalidOperationException(
+                    $"'{nameof(ApplicationUser)}' のインスタンスを作成できませんでした。" +
+                    $"'{nameof(ApplicationUser)}' が abstract ではなく、引数なしコンストラクタを持っていることを確認するか、" +
+                    $"/Areas/Identity/Pages/Account/Register.cshtml をオーバーライドしてください。");
             }
         }
 
@@ -173,7 +165,7 @@ namespace DartLog.Areas.Identity.Pages.Account
         {
             if (!_userManager.SupportsUserEmail)
             {
-                throw new NotSupportedException("The default UI requires a user store with email support.");
+                throw new NotSupportedException("この UI では、メールアドレスをサポートするユーザーストアが必要です。");
             }
             return (IUserEmailStore<ApplicationUser>)_userStore;
         }
