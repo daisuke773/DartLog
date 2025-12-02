@@ -98,7 +98,7 @@ else
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>スロー履歴</span>
-                    <small class="text-muted">新しい投げほど上に表示</small>
+                    <small class="text-muted">新しい順に表示しています</small>
                 </div>
                 <div class="card-body p-0">
                     @if (Model.ThrowHistory == null || !Model.ThrowHistory.Any())
@@ -231,10 +231,10 @@ else
 
                 const innerBull   = 0.045;  // 内ブルの外周よりちょい大きめ
                 const outerBull   = 0.120;  // 外ブルの外周
-                const tripleInner = 0.370;
-                const tripleOuter = 0.400;
-                const doubleInner = 0.625;
-                const doubleOuter = 0.670;
+                const tripleInner = 0.350;
+                const tripleOuter = 0.460;
+                const doubleInner = 0.630;
+                const doubleOuter = 0.720;
 
                 if (ratio <= innerBull) {
                     score = 50;

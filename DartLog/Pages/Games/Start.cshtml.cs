@@ -6,6 +6,12 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace DartLog.Pages.Games
 {
+    /// <summary>
+    /// CountUp の「ゲーム開始」ページ。
+    /// 画面では説明と「ゲーム開始」ボタンのみを表示し、
+    /// POST されたタイミングで Games テーブルに新しいゲームを作成して
+    /// プレイ画面へ遷移する。
+    /// </summary>
     public class StartModel : PageModel
     {
         private readonly DartLogContext _context;
@@ -15,27 +21,24 @@ namespace DartLog.Pages.Games
             _context = context;
         }
 
-        // 今はプレイヤー選択をしないので、一覧もバインドも不要
-        // 画面側は「ゲーム開始」ボタンだけでOK
-
-        // GET：ゲーム開始画面（説明とボタンだけを表示）
+        // GET：ゲーム開始画面の表示（実処理なし）
         public void OnGet()
         {
-            // 特に何もしない
         }
 
-        // POST：ゲーム開始（ログインユーザーのゲームを1件作成）
+        // POST：ゲームを1件作成してプレイ画面に遷移
         public async Task<IActionResult> OnPostAsync()
         {
-            // ログインユーザーIDを取得
+            // ログイン中のユーザーIDを取得
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (userId == null)
             {
-                // 認証されていない場合はログインへ
+                // 認証されていない場合はログインページへ誘導
                 return Challenge();
             }
 
-            // Game を作成（開始時点で in_progress）
+            // ゲームの初期レコードを作成（in_progress = プレイ中）
             var game = new Game
             {
                 UserId = userId,
@@ -45,10 +48,11 @@ namespace DartLog.Pages.Games
                 Memo = null
             };
 
+            // DB に保存
             _context.Games.Add(game);
             await _context.SaveChangesAsync();
 
-            // gameId を付けて Play ページへ
+            // 作成した gameId を付けて Play ページへリダイレクト
             return RedirectToPage("/Games/Play", new { gameId = game.Id });
         }
     }

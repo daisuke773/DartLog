@@ -1,8 +1,56 @@
 ﻿@page
 @model DartLog.Pages.Games.StartModel
+@{
+    ViewData["Title"] = "CountUp ゲーム開始";
+}
 
-<h1>CountUp ゲーム開始</h1>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
 
-<form method="post">
-    <button type="submit" class="btn btn-success">ゲーム開始</button>
-</form>
+            <!-- カード全体 -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+
+                    <!-- タイトル行 -->
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-bullseye fs-1 me-3"></i>
+                        <div>
+                            <h1 class="h4 mb-1">CountUp をはじめる</h1>
+                            <p class="mb-0 text-muted small">
+                                新しいゲームを作成して、スコアを記録していきます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <!-- 説明テキスト -->
+                    <p class="text-muted small mb-2">
+                        「ゲーム開始」を押すと、<strong>Games テーブルに新しいゲームが登録</strong>され、
+                        すぐにプレイ画面へ移動します。
+                    </p>
+
+                    <ul class="text-muted small mb-4">
+                        <li>スコアはラウンドごとに保存されます。</li>
+                        <li>プレイ終了後の結果は「ゲーム履歴」からいつでも確認できます。</li>
+                        <li>誤って開始しても、プレイ画面で中断できます。</li>
+                    </ul>
+
+                    <!-- ボタン類 -->
+                    <form method="post" class="d-flex justify-content-between gap-2">
+                        <a asp-page="/Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left-short me-1"></i> ホームに戻る
+                        </a>
+
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="bi bi-play-fill me-1"></i> ゲーム開始
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
