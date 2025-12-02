@@ -26,51 +26,30 @@ namespace DartLog.Areas.Identity.Pages.Account.Manage
             _signInManager = signInManager;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string Username { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Phone]
-            [Display(Name = "電話番号")]
-            public string PhoneNumber { get; set; }
+            [Display(Name = "表示名")]
+            [StringLength(50, ErrorMessage = "{0} は {2} 文字以上、{1} 文字以下で入力してください。", MinimumLength = 1)]
+            public string DisplayName { get; set; }
         }
 
         private async Task LoadAsync(ApplicationUser user)
         {
             var userName = await _userManager.GetUserNameAsync(user);
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
             Username = userName;
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                DisplayName = user.DisplayName  // ← ApplicationUser のプロパティから読み込み
             };
         }
 
@@ -100,13 +79,15 @@ namespace DartLog.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
-            if (Input.PhoneNumber != phoneNumber)
+            // 表示名を更新
+            if (user.DisplayName != Input.DisplayName)
             {
-                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-                if (!setPhoneResult.Succeeded)
+                user.DisplayName = Input.DisplayName;
+
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
                 {
-                    StatusMessage = "電話番号の更新中に予期せぬエラーが発生しました。";
+                    StatusMessage = "表示名の更新中に予期せぬエラーが発生しました。";
                     return RedirectToPage();
                 }
             }

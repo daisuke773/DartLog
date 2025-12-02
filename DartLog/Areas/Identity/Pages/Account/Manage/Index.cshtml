@@ -26,7 +26,7 @@
         <form id="profile-form" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
 
-            <!-- ユーザー名 -->
+            <!-- ユーザー名（ログインID） -->
             <div class="form-floating mb-3">
                 <input asp-for="Username"
                        class="form-control"
@@ -35,13 +35,13 @@
                 <label asp-for="Username" class="form-label">ユーザー名</label>
             </div>
 
-            <!-- 電話番号 -->
+            <!-- 表示名 -->
             <div class="form-floating mb-4">
-                <input asp-for="Input.PhoneNumber"
+                <input asp-for="Input.DisplayName"
                        class="form-control"
-                       placeholder="電話番号を入力してください" />
-                <label asp-for="Input.PhoneNumber" class="form-label">電話番号</label>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                       placeholder="表示名を入力してください" />
+                <label asp-for="Input.DisplayName" class="form-label">表示名</label>
+                <span asp-validation-for="Input.DisplayName" class="text-danger"></span>
             </div>
 
             <!-- 保存ボタン -->
